@@ -30,6 +30,35 @@ const FadeIn = ({ children, delay = 0, className = "", direction = "up" }: { chi
   );
 };
 
+const FloatingPuzzlePiece = ({ 
+  className, 
+  delay = 0, 
+  duration = 5, 
+  size = 32, 
+  color = "text-brand-orange-400" 
+}: { 
+  className?: string, delay?: number, duration?: number, size?: number, color?: string 
+}) => (
+  <motion.div
+    className={`absolute pointer-events-none -z-10 ${color} ${className}`}
+    initial={{ opacity: 0, scale: 0.8, rotate: 0 }}
+    animate={{ 
+      opacity: [0, 0.15, 0], 
+      scale: [0.8, 1.1, 0.8],
+      rotate: [0, 15, -5, 0],
+      y: [0, -20, 0]
+    }}
+    transition={{ 
+      repeat: Infinity, 
+      duration, 
+      delay, 
+      ease: "easeInOut" 
+    }}
+  >
+    <Puzzle size={size} strokeWidth={1.5} />
+  </motion.div>
+);
+
 const FloatingBackground = () => {
   const { scrollY } = useScroll();
   const y1 = useTransform(scrollY, [0, 2000], [0, -300]);
@@ -37,7 +66,7 @@ const FloatingBackground = () => {
   const y3 = useTransform(scrollY, [0, 2000], [0, -200]);
 
   return (
-    <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+    <div className="fixed inset-0 pointer-events-none overflow-hidden -z-20">
       <motion.div style={{ y: y1 }} className="absolute top-[5%] left-[5%] w-72 h-72 bg-brand-orange-200/30 rounded-full blur-[80px]" />
       <motion.div style={{ y: y2 }} className="absolute top-[30%] right-[5%] w-96 h-96 bg-brand-emerald-100/40 rounded-full blur-[100px]" />
       <motion.div style={{ y: y3 }} className="absolute bottom-[10%] left-[10%] w-80 h-80 bg-blue-200/30 rounded-full blur-[80px]" />
@@ -75,8 +104,12 @@ export default function App() {
 
       {/* 1. Hero Section */}
       <section className="pt-32 pb-20 px-6 relative">
+        <FloatingPuzzlePiece className="top-40 left-[10%]" size={48} delay={0} duration={6} color="text-brand-orange-500" />
+        <FloatingPuzzlePiece className="bottom-20 left-[40%]" size={32} delay={2} duration={5} color="text-emerald-500" />
+        <FloatingPuzzlePiece className="top-32 right-[10%]" size={64} delay={1} duration={7} color="text-blue-400" />
+        
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <FadeIn direction="right" className="text-center md:text-left">
+          <FadeIn direction="right" className="text-center md:text-left relative z-10">
             <motion.div 
               whileHover={{ scale: 1.05, rotate: -2 }}
               className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-white/60 shadow-sm mb-6 cursor-default"
@@ -109,7 +142,7 @@ export default function App() {
             </div>
           </FadeIn>
           
-          <FadeIn direction="left" delay={0.2} className="relative">
+          <FadeIn direction="left" delay={0.2} className="relative z-10">
             <motion.div 
               animate={{ y: [-8, 8, -8] }}
               transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
@@ -157,6 +190,9 @@ export default function App() {
 
       {/* 2. How to Play Section */}
       <section className="py-20 px-6 relative z-10">
+        <FloatingPuzzlePiece className="top-10 left-[20%]" size={40} delay={1.5} duration={5.5} color="text-brand-orange-400" />
+        <FloatingPuzzlePiece className="bottom-10 right-[20%]" size={50} delay={0.5} duration={6.5} color="text-emerald-400" />
+        
         <div className="max-w-5xl mx-auto">
           <FadeIn className="text-center mb-12">
             <h2 className="font-jua text-4xl mb-4 text-[var(--color-text-main)]">어떻게 해볼까요?</h2>
@@ -206,7 +242,10 @@ export default function App() {
 
       {/* 3. Personalization Section */}
       <section className="py-20 px-6 relative z-10">
-        <div className="max-w-4xl mx-auto bg-white/60 backdrop-blur-md rounded-[3rem] p-8 md:p-12 shadow-xl border border-white/50">
+        <FloatingPuzzlePiece className="top-1/2 left-[5%]" size={36} delay={2} duration={5} color="text-blue-400" />
+        <FloatingPuzzlePiece className="top-1/4 right-[8%]" size={44} delay={1} duration={6} color="text-brand-orange-500" />
+        
+        <div className="max-w-4xl mx-auto bg-white/60 backdrop-blur-md rounded-[3rem] p-8 md:p-12 shadow-xl border border-white/50 relative">
           <FadeIn className="text-center mb-10">
             <h2 className="font-jua text-4xl mb-4">성경 말씀을<br/>얼마나 접해봤나요?</h2>
             <p className="text-lg font-bold text-[var(--color-text-main)]/70">당신의 수준에 맞게 맞춤 플랜을 생성해 드려요.</p>
@@ -244,6 +283,9 @@ export default function App() {
 
       {/* 4. Achievements Section */}
       <section className="py-20 px-6 relative z-10">
+        <FloatingPuzzlePiece className="bottom-0 left-[15%]" size={56} delay={0.5} duration={7} color="text-emerald-300" />
+        <FloatingPuzzlePiece className="top-10 right-[15%]" size={32} delay={2.5} duration={4.5} color="text-brand-orange-300" />
+        
         <div className="max-w-5xl mx-auto">
           <FadeIn className="text-center mb-12">
             <h2 className="font-jua text-4xl mb-4">업적 달성!</h2>
@@ -280,6 +322,9 @@ export default function App() {
 
       {/* 5. CTA Section */}
       <section className="py-24 px-6 text-center relative z-10">
+        <FloatingPuzzlePiece className="top-10 left-[30%]" size={40} delay={1} duration={5} color="text-brand-orange-500" />
+        <FloatingPuzzlePiece className="bottom-20 right-[30%]" size={48} delay={0} duration={6} color="text-blue-400" />
+        
         <div className="max-w-2xl mx-auto relative">
           <FadeIn>
             <motion.div 

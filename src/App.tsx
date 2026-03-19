@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import React, { useRef } from 'react';
+import { motion, useScroll, useTransform } from 'motion/react';
 import { 
   BookOpen, 
   Puzzle, 
@@ -13,44 +13,77 @@ import {
   Eye
 } from 'lucide-react';
 
-const FadeIn = ({ children, delay = 0, className = "" }: { children: React.ReactNode, delay?: number, className?: string }) => (
-  <motion.div
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    viewport={{ once: true, margin: "-50px" }}
-    transition={{ duration: 0.6, delay, ease: "easeOut" }}
-    className={className}
-  >
-    {children}
-  </motion.div>
-);
+const FadeIn = ({ children, delay = 0, className = "", direction = "up" }: { children: React.ReactNode, delay?: number, className?: string, direction?: "up" | "down" | "left" | "right" }) => {
+  const y = direction === "up" ? 30 : direction === "down" ? -30 : 0;
+  const x = direction === "left" ? 30 : direction === "right" ? -30 : 0;
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y, x }}
+      whileInView={{ opacity: 1, y: 0, x: 0 }}
+      viewport={{ once: true, margin: "-50px" }}
+      transition={{ duration: 0.7, delay, ease: [0.21, 0.47, 0.32, 0.98] }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
+
+const FloatingBackground = () => {
+  const { scrollY } = useScroll();
+  const y1 = useTransform(scrollY, [0, 2000], [0, -300]);
+  const y2 = useTransform(scrollY, [0, 2000], [0, 400]);
+  const y3 = useTransform(scrollY, [0, 2000], [0, -200]);
+
+  return (
+    <div className="fixed inset-0 pointer-events-none overflow-hidden -z-10">
+      <motion.div style={{ y: y1 }} className="absolute top-[5%] left-[5%] w-72 h-72 bg-brand-orange-200/30 rounded-full blur-[80px]" />
+      <motion.div style={{ y: y2 }} className="absolute top-[30%] right-[5%] w-96 h-96 bg-brand-emerald-100/40 rounded-full blur-[100px]" />
+      <motion.div style={{ y: y3 }} className="absolute bottom-[10%] left-[10%] w-80 h-80 bg-blue-200/30 rounded-full blur-[80px]" />
+    </div>
+  );
+};
 
 export default function App() {
   return (
-    <div className="min-h-screen overflow-hidden selection:bg-brand-orange-200/50">
+    <div className="min-h-screen overflow-hidden selection:bg-brand-orange-200/50 relative">
+      <FloatingBackground />
+      
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/40 backdrop-blur-md border-b border-white/20">
         <div className="max-w-5xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <motion.div 
+            className="flex items-center gap-2 cursor-pointer"
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+          >
             <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-brand-orange-400 to-brand-orange-500 flex items-center justify-center text-white shadow-sm">
               <BookOpen size={18} />
             </div>
             <span className="font-jua text-2xl tracking-tight text-[var(--color-text-main)]">말씀 팡팡</span>
-          </div>
-          <button className="btn-secondary px-4 py-1.5 text-sm">
+          </motion.div>
+          <motion.button 
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="btn-secondary px-4 py-1.5 text-sm"
+          >
             앱 시작하기
-          </button>
+          </motion.button>
         </div>
       </nav>
 
       {/* 1. Hero Section */}
       <section className="pt-32 pb-20 px-6 relative">
         <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
-          <FadeIn className="text-center md:text-left">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 border border-white/40 shadow-sm mb-6">
+          <FadeIn direction="right" className="text-center md:text-left">
+            <motion.div 
+              whileHover={{ scale: 1.05, rotate: -2 }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-sm border border-white/60 shadow-sm mb-6 cursor-default"
+            >
               <Sparkles size={16} className="text-brand-orange-500" />
               <span className="text-sm font-bold text-[var(--color-text-main)]">우리 아이 첫 성경 퍼즐</span>
-            </div>
+            </motion.div>
             <h1 className="font-jua text-5xl md:text-7xl leading-[1.1] mb-6 text-[var(--color-text-main)] drop-shadow-sm">
               말씀 팡팡 퍼즐<br/>
               <span className="text-brand-orange-600">이렇게 쉬워요!</span>
@@ -60,14 +93,28 @@ export default function App() {
               처음부터 차근차근, 시편, 잠언, 창세기로 시작할게요!
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
-              <button className="btn-primary px-8 py-4 text-xl flex items-center justify-center gap-2">
-                내 맞춤 말씀 시작하기!
-              </button>
+              <motion.button 
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                className="btn-primary px-8 py-4 text-xl flex items-center justify-center gap-2 group relative overflow-hidden"
+              >
+                <span className="relative z-10">내 맞춤 말씀 시작하기!</span>
+                <motion.div 
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                />
+              </motion.button>
             </div>
           </FadeIn>
           
-          <FadeIn delay={0.2} className="relative">
-            <div className="relative w-full max-w-md mx-auto">
+          <FadeIn direction="left" delay={0.2} className="relative">
+            <motion.div 
+              animate={{ y: [-8, 8, -8] }}
+              transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+              className="relative w-full max-w-md mx-auto"
+            >
               <div className="absolute inset-0 bg-white/40 rounded-[3rem] transform rotate-6 scale-105 -z-10 shadow-xl" />
               <div className="bg-brand-amber-50 rounded-[3rem] shadow-2xl border-8 border-white p-6 relative overflow-hidden aspect-[4/5] flex flex-col">
                 {/* Mockup UI */}
@@ -79,32 +126,37 @@ export default function App() {
                   항상 기뻐하라<br/>쉬지 말고 기도하라
                 </h3>
                 <div className="flex flex-wrap gap-2 justify-center mb-auto">
-                  <div className="bg-white px-4 py-3 rounded-2xl shadow-sm font-bold text-lg border-b-4 border-gray-200">항상</div>
-                  <div className="bg-brand-emerald-100 px-4 py-3 rounded-2xl shadow-sm font-bold text-lg border-b-4 border-brand-emerald-400 text-emerald-800">기뻐하라</div>
-                  <div className="bg-white px-4 py-3 rounded-2xl shadow-sm font-bold text-lg border-b-4 border-gray-200">쉬지 말고</div>
-                  <div className="bg-white px-4 py-3 rounded-2xl shadow-sm font-bold text-lg border-b-4 border-gray-200">기도하라</div>
+                  <motion.div whileHover={{ scale: 1.05, y: -2 }} className="bg-white px-4 py-3 rounded-2xl shadow-sm font-bold text-lg border-b-4 border-gray-200 cursor-pointer">항상</motion.div>
+                  <motion.div whileHover={{ scale: 1.05, y: -2 }} className="bg-brand-emerald-100 px-4 py-3 rounded-2xl shadow-sm font-bold text-lg border-b-4 border-brand-emerald-400 text-emerald-800 cursor-pointer">기뻐하라</motion.div>
+                  <motion.div whileHover={{ scale: 1.05, y: -2 }} className="bg-white px-4 py-3 rounded-2xl shadow-sm font-bold text-lg border-b-4 border-gray-200 cursor-pointer">쉬지 말고</motion.div>
+                  <motion.div whileHover={{ scale: 1.05, y: -2 }} className="bg-white px-4 py-3 rounded-2xl shadow-sm font-bold text-lg border-b-4 border-gray-200 cursor-pointer">기도하라</motion.div>
                 </div>
-                <div className="mt-6 bg-white/60 p-4 rounded-2xl text-center font-bold text-sm">
+                <motion.div 
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 1, duration: 0.5 }}
+                  className="mt-6 bg-white/60 p-4 rounded-2xl text-center font-bold text-sm"
+                >
                   늘 웃는 얼굴로 지내요!<br/>하나님과 매일 이야기해요.
-                </div>
+                </motion.div>
               </div>
               
               {/* Floating Elements */}
               <motion.div 
-                animate={{ y: [0, -10, 0] }} 
-                transition={{ repeat: Infinity, duration: 4, ease: "easeInOut" }}
+                animate={{ y: [0, -15, 0], rotate: [0, 5, -5, 0] }} 
+                transition={{ repeat: Infinity, duration: 5, ease: "easeInOut" }}
                 className="absolute -top-6 -right-6 bg-white p-4 rounded-2xl shadow-xl border border-white/50 flex items-center gap-3"
               >
                 <div className="w-10 h-10 rounded-full bg-brand-amber-100 flex items-center justify-center text-2xl">🌟</div>
                 <div className="text-sm font-black">정답입니다!</div>
               </motion.div>
-            </div>
+            </motion.div>
           </FadeIn>
         </div>
       </section>
 
       {/* 2. How to Play Section */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 relative z-10">
         <div className="max-w-5xl mx-auto">
           <FadeIn className="text-center mb-12">
             <h2 className="font-jua text-4xl mb-4 text-[var(--color-text-main)]">어떻게 해볼까요?</h2>
@@ -135,14 +187,17 @@ export default function App() {
                 desc: "흩어진 단어를 순서대로 맞춰요"
               }
             ].map((feature, idx) => (
-              <FadeIn key={idx} delay={idx * 0.1}>
-                <div className="bg-white/80 backdrop-blur-sm p-8 rounded-[2rem] shadow-sm border border-white/50 h-full hover:shadow-md transition-shadow text-center">
-                  <div className={`w-16 h-16 mx-auto rounded-2xl ${feature.bg} ${feature.color} flex items-center justify-center mb-6 shadow-sm`}>
+              <FadeIn key={idx} delay={idx * 0.15}>
+                <motion.div 
+                  whileHover={{ y: -8, scale: 1.02 }}
+                  className="group bg-white/80 backdrop-blur-sm p-8 rounded-[2rem] shadow-sm hover:shadow-xl border border-white/50 h-full transition-all duration-300 text-center cursor-default"
+                >
+                  <div className={`w-16 h-16 mx-auto rounded-2xl ${feature.bg} ${feature.color} flex items-center justify-center mb-6 shadow-sm transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6`}>
                     {feature.icon}
                   </div>
-                  <h3 className="font-jua text-2xl mb-3">{feature.title}</h3>
+                  <h3 className="font-jua text-2xl mb-3 transition-colors group-hover:text-brand-orange-600">{feature.title}</h3>
                   <p className="font-bold text-[var(--color-text-main)]/70">{feature.desc}</p>
-                </div>
+                </motion.div>
               </FadeIn>
             ))}
           </div>
@@ -150,7 +205,7 @@ export default function App() {
       </section>
 
       {/* 3. Personalization Section */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 relative z-10">
         <div className="max-w-4xl mx-auto bg-white/60 backdrop-blur-md rounded-[3rem] p-8 md:p-12 shadow-xl border border-white/50">
           <FadeIn className="text-center mb-10">
             <h2 className="font-jua text-4xl mb-4">성경 말씀을<br/>얼마나 접해봤나요?</h2>
@@ -166,11 +221,21 @@ export default function App() {
               "매일 말씀을 읽어요",
               "성경을 잘 알아요"
             ].map((level, idx) => (
-              <FadeIn key={idx} delay={idx * 0.05}>
-                <button className="w-full bg-white px-6 py-4 rounded-2xl shadow-sm border-2 border-transparent hover:border-brand-orange-400 font-bold text-lg text-left flex justify-between items-center group transition-all">
+              <FadeIn key={idx} delay={idx * 0.05} direction="left">
+                <motion.button 
+                  whileHover={{ scale: 1.02, y: -2 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="w-full bg-white px-6 py-4 rounded-2xl shadow-sm hover:shadow-md border-2 border-transparent hover:border-brand-orange-400 font-bold text-lg text-left flex justify-between items-center group transition-colors duration-200"
+                >
                   {level}
-                  <CheckCircle2 className="text-gray-300 group-hover:text-brand-orange-400 transition-colors" size={24} />
-                </button>
+                  <motion.div
+                    initial={{ scale: 0.8, opacity: 0.5 }}
+                    whileHover={{ scale: 1.2, opacity: 1, rotate: [0, -10, 10, 0] }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <CheckCircle2 className="text-gray-300 group-hover:text-brand-orange-400 transition-colors" size={24} />
+                  </motion.div>
+                </motion.button>
               </FadeIn>
             ))}
           </div>
@@ -178,7 +243,7 @@ export default function App() {
       </section>
 
       {/* 4. Achievements Section */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-6 relative z-10">
         <div className="max-w-5xl mx-auto">
           <FadeIn className="text-center mb-12">
             <h2 className="font-jua text-4xl mb-4">업적 달성!</h2>
@@ -193,11 +258,20 @@ export default function App() {
               { title: "말씀 수집가", desc: "좋아하는 말씀을 모았어요", icon: "💖" }
             ].map((badge, idx) => (
               <FadeIn key={idx} delay={idx * 0.1}>
-                <div className="bg-white/80 p-6 rounded-3xl shadow-sm border border-white/50 text-center h-full flex flex-col items-center justify-center">
-                  <div className="text-5xl mb-4 drop-shadow-sm">{badge.icon}</div>
-                  <h3 className="font-jua text-xl mb-2">{badge.title}</h3>
+                <motion.div 
+                  whileHover={{ y: -6, scale: 1.03 }}
+                  className="group bg-white/80 backdrop-blur-sm p-6 rounded-3xl shadow-sm hover:shadow-lg border border-white/50 text-center h-full flex flex-col items-center justify-center transition-all duration-300 cursor-default"
+                >
+                  <motion.div 
+                    className="text-5xl mb-4 drop-shadow-sm origin-bottom"
+                    whileHover={{ rotate: [0, -10, 10, -10, 10, 0], scale: 1.1 }}
+                    transition={{ duration: 0.5 }}
+                  >
+                    {badge.icon}
+                  </motion.div>
+                  <h3 className="font-jua text-xl mb-2 group-hover:text-brand-orange-600 transition-colors">{badge.title}</h3>
                   <p className="text-sm font-bold text-[var(--color-text-main)]/60">{badge.desc}</p>
-                </div>
+                </motion.div>
               </FadeIn>
             ))}
           </div>
@@ -205,12 +279,15 @@ export default function App() {
       </section>
 
       {/* 5. CTA Section */}
-      <section className="py-24 px-6 text-center relative">
-        <div className="max-w-2xl mx-auto relative z-10">
+      <section className="py-24 px-6 text-center relative z-10">
+        <div className="max-w-2xl mx-auto relative">
           <FadeIn>
-            <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl">
+            <motion.div 
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              className="w-20 h-20 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-xl cursor-default"
+            >
               <Smile size={40} className="text-brand-orange-500" />
-            </div>
+            </motion.div>
             <h2 className="font-jua text-4xl md:text-5xl mb-6">
               홈 화면에 추가하세요!
             </h2>
@@ -219,16 +296,29 @@ export default function App() {
               매일매일 말씀과 함께하는 습관을 만들어보세요.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button className="btn-primary px-8 py-4 text-xl flex items-center justify-center gap-2">
-                <Download size={24} /> 내 맞춤 말씀 시작하기
-              </button>
+              <motion.button 
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="btn-primary px-8 py-4 text-xl flex items-center justify-center gap-2 group relative overflow-hidden"
+              >
+                <span className="relative z-10 flex items-center gap-2">
+                  <Download size={24} className="group-hover:-translate-y-1 transition-transform" /> 
+                  내 맞춤 말씀 시작하기
+                </span>
+                <motion.div 
+                  className="absolute inset-0 bg-white/20"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: "100%" }}
+                  transition={{ duration: 0.6, ease: "easeInOut" }}
+                />
+              </motion.button>
             </div>
           </FadeIn>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 px-6 text-center border-t border-[var(--color-text-main)]/10">
+      <footer className="py-8 px-6 text-center border-t border-[var(--color-text-main)]/10 relative z-10">
         <div className="flex items-center justify-center gap-2 mb-4">
           <BookOpen size={20} className="text-brand-orange-600" />
           <span className="font-jua text-xl">말씀 팡팡</span>
